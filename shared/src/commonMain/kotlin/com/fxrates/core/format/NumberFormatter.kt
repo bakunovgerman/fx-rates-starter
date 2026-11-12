@@ -16,16 +16,14 @@ object NumberFormatter {
     fun formatSignedRate(change: BigDecimal): String = change.round(RATE_DECIMALS).toSigned(RATE_DECIMALS)
 
     /** `1.234` → `"+1.23%"`, `-0.5` → `"-0.50%"`; a change that rounds to zero has no sign. */
-    fun formatSignedPercent(percent: Double): String {
-        val rounded = BigDecimal.fromDouble(percent).round(PERCENT_DECIMALS)
-        return rounded.toSigned(PERCENT_DECIMALS) + "%"
-    }
+    fun formatSignedPercent(percent: BigDecimal): String = percent.round(PERCENT_DECIMALS).toSigned(PERCENT_DECIMALS) + "%"
 
     private fun BigDecimal.round(decimals: Long): BigDecimal {
         return roundToDigitPositionAfterDecimalPoint(decimals, RoundingMode.ROUND_HALF_AWAY_FROM_ZERO)
     }
 
     private fun BigDecimal.toSigned(decimals: Long): String {
+        if (isZero()) return BigDecimal.ZERO.toFixed(decimals)
         val sign = if (isPositive) "+" else ""
         return sign + toFixed(decimals)
     }

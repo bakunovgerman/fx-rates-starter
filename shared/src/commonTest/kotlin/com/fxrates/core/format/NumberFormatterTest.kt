@@ -20,13 +20,15 @@ class NumberFormatterTest : FunSpec({
 
     context("formatSignedPercent") {
         withTests(
-            1.234 to "+1.23%",
-            -0.5 to "-0.50%",
-            0.0 to "0.00%",
-            0.004 to "0.00%",
-            -0.004 to "0.00%",
+            "1.234" to "+1.23%",
+            "-0.5" to "-0.50%",
+            "0" to "0.00%",
+            "0.004" to "0.00%",
+            "-0.004" to "0.00%",
+            "1.235" to "+1.24%",
+            "-1.235" to "-1.24%",
         ) { (input, expected) ->
-            NumberFormatter.formatSignedPercent(input) shouldBe expected
+            NumberFormatter.formatSignedPercent(input.toBigDecimal()) shouldBe expected
         }
     }
 
@@ -35,6 +37,10 @@ class NumberFormatterTest : FunSpec({
             "0.0123" to "+0.0123",
             "-1.5" to "-1.5000",
             "0" to "0.0000",
+            "0.00004" to "0.0000",
+            "-0.00004" to "0.0000",
+            "0.00005" to "+0.0001",
+            "-0.00005" to "-0.0001",
         ) { (input, expected) ->
             NumberFormatter.formatSignedRate(input.toBigDecimal()) shouldBe expected
         }

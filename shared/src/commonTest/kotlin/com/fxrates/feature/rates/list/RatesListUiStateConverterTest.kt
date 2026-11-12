@@ -7,8 +7,8 @@ import com.fxrates.feature.rates.list.model.Trend
 import com.fxrates.feature.rates.list.mvi.RatesListStore
 import com.fxrates.testing.currencyRate
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.datatest.withTests
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class RatesListUiStateConverterTest : FunSpec({
@@ -36,9 +36,30 @@ class RatesListUiStateConverterTest : FunSpec({
         val items = converter.createUiState(state()).content.shouldBeInstanceOf<Content.Items>().items
 
         items.map { item -> item.trend } shouldBe listOf(Trend.Up, Trend.Down, Trend.Flat)
-        items[0].change?.shouldStartWith("+")
-        items[1].change?.shouldStartWith("-")
-        items[2].change shouldBe null
+        items.map { item -> item.change } shouldBe listOf("+1.14%", "-0.13%", null)
+    }
+
+    context("a row displays change relative to its previous quote") {
+        withTests(
+            Triple("100", "125", "+25.00%"),
+            Triple("125", "100", "-20.00%"),
+            Triple("3", "4", "+33.33%"),
+            Triple("100", "0", "-100.00%"),
+        ) { (previous, current, expected) ->
+            val quote = currencyRate(rate = current, previousRate = previous)
+            val uiState = converter.createUiState(RatesListStore.State(base = "USD", rates = Resource.Data(listOf(quote))))
+
+            uiState.content.shouldBeInstanceOf<Content.Items>().items.single().change shouldBe expected
+        }
+    }
+
+    test("a zero previous quote has no percentage and a neutral trend") {
+        val quote = currencyRate(rate = "1", previousRate = "0")
+        val storeState = RatesListStore.State(base = "USD", rates = Resource.Data(listOf(quote)))
+        val row = converter.createUiState(storeState).content.shouldBeInstanceOf<Content.Items>().items.single()
+
+        row.change shouldBe null
+        row.trend shouldBe Trend.Flat
     }
 
     test("the query filters by code and by name, ignoring case") {

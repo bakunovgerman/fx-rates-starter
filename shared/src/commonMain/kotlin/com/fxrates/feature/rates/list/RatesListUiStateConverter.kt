@@ -54,17 +54,17 @@ internal class RatesListUiStateConverter {
     }
 
     private fun toItem(rate: CurrencyRate): RateItem {
-        val change = rate.previousRate?.let { previous -> RateChangeCalculator.calculate(previous, rate.rate) }
+        val percent = rate.previousRate?.let { previous -> RateChangeCalculator.calculate(previous, rate.rate).percent }
         val trend = when {
-            change == null || change.absolute.isZero() -> Trend.Flat
-            change.absolute.isPositive -> Trend.Up
+            percent == null || percent.isZero() -> Trend.Flat
+            percent.isPositive -> Trend.Up
             else -> Trend.Down
         }
         return RateItem(
             code = rate.code,
             name = rate.name,
             rate = NumberFormatter.formatRate(rate.rate),
-            change = change?.let { value -> NumberFormatter.formatSignedPercent(value.percent) },
+            change = percent?.let(NumberFormatter::formatSignedPercent),
             trend = trend,
         )
     }
