@@ -47,7 +47,8 @@ class RatesListUiStateConverterTest : FunSpec({
             Triple("100", "0", "-100.00%"),
         ) { (previous, current, expected) ->
             val quote = currencyRate(rate = current, previousRate = previous)
-            val uiState = converter.createUiState(RatesListStore.State(base = "USD", rates = Resource.Data(listOf(quote))))
+            val storeState = RatesListStore.State(base = "USD", rates = Resource.Data(listOf(quote)))
+            val uiState = converter.createUiState(storeState)
 
             uiState.content.shouldBeInstanceOf<Content.Items>().items.single().change shouldBe expected
         }

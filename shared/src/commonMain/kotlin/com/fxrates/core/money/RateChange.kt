@@ -23,10 +23,19 @@ object RateChangeCalculator {
         decimalPrecision = 34,
         roundingMode = RoundingMode.ROUND_HALF_AWAY_FROM_ZERO,
     )
+    private val divisionMode = DecimalMode(
+        decimalPrecision = percentMode.decimalPrecision + 1,
+        roundingMode = RoundingMode.TOWARDS_ZERO,
+    )
 
     fun calculate(previous: BigDecimal, current: BigDecimal): RateChange {
         val absolute = current - previous
-        val percent = if (previous.isZero()) null else (absolute * hundred).divide(previous, percentMode)
+        val percent = if (previous.isZero()) {
+            null
+        } else {
+            // bignum 0.3.10 can misround recurring division. Truncate with one guard digit, then round.
+            (absolute * hundred).divide(previous, divisionMode).roundSignificand(percentMode)
+        }
         return RateChange(absolute = absolute, percent = percent)
     }
 
