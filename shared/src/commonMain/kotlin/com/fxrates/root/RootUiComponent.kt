@@ -4,7 +4,11 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.Value
+import com.fxrates.feature.rates.detail.CurrencyDetailUiComponent
+import com.fxrates.feature.rates.detail.CurrencyDetailUiComponentDefault
 import com.fxrates.feature.rates.list.RatesListUiComponent
 import com.fxrates.feature.rates.list.RatesListUiComponentDefault
 import kotlinx.serialization.Serializable
@@ -20,6 +24,8 @@ abstract class RootUiComponent {
 
         class RatesList(val component: RatesListUiComponent) : Child()
 
+        class CurrencyDetail(val component: CurrencyDetailUiComponent) : Child()
+
     }
 
 }
@@ -28,6 +34,7 @@ abstract class RootUiComponent {
 internal class RootUiComponentDefault(
     @Assisted componentContext: ComponentContext,
     private val ratesListFactory: RatesListUiComponentDefault.Factory,
+    private val currencyDetailFactory: CurrencyDetailUiComponentDefault.Factory,
 ) : RootUiComponent(), ComponentContext by componentContext {
 
     @AssistedFactory
@@ -57,12 +64,30 @@ internal class RootUiComponentDefault(
                 ),
             )
         }
+        is Config.CurrencyDetail -> {
+            Child.CurrencyDetail(
+                currencyDetailFactory.create(
+                    componentContext = componentContext,
+                    base = config.base,
+                    code = config.code,
+                    callbacks = CurrencyDetailCallbacks(),
+                ),
+            )
+        }
     }
 
     private inner class RatesListCallbacks : RatesListUiComponentDefault.Callbacks {
 
         override fun onOpenCurrency(base: String, code: String) {
-            // The currency screen does not exist yet.
+            navigation.pushNew(Config.CurrencyDetail(base = base, code = code))
+        }
+
+    }
+
+    private inner class CurrencyDetailCallbacks : CurrencyDetailUiComponentDefault.Callbacks {
+
+        override fun onBack() {
+            navigation.pop()
         }
 
     }
@@ -72,6 +97,9 @@ internal class RootUiComponentDefault(
 
         @Serializable
         data object RatesList : Config()
+
+        @Serializable
+        data class CurrencyDetail(val base: String, val code: String) : Config()
 
     }
 

@@ -12,7 +12,15 @@ object Strings {
     const val ERROR_TITLE = "Could not load the rates"
     const val RETRY = "Retry"
     const val REFRESH = "Refresh"
+    const val BACK = "Back"
+    const val CURRENCY_DETAIL_LATEST = "Latest rate"
+    const val CURRENCY_DETAIL_CHANGE = "30-day change"
+    const val CURRENCY_DETAIL_CHANGE_UNAVAILABLE = "Change unavailable"
+    const val CURRENCY_DETAIL_HISTORY = "Rate history"
+    const val CURRENCY_DETAIL_NO_RATES = "No rates available for this period"
 
     fun ratesSubtitle(base: String, date: String): String = "1 $base · $date"
+
+    fun currencyPair(base: String, code: String): String = "$base / $code"
 
 }
