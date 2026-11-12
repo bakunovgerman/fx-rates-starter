@@ -2,6 +2,7 @@ package com.fxrates.data.repository
 
 import com.fxrates.data.remote.dto.TimeSeriesDto
 import com.fxrates.domain.model.CurrencyRate
+import com.fxrates.domain.model.RateObservation
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import kotlinx.datetime.LocalDate
@@ -30,6 +31,21 @@ class RatesConverter {
                 )
             }
             .sortedBy(CurrencyRate::code)
+    }
+
+    fun toRateHistory(
+        timeSeries: TimeSeriesDto,
+        code: String,
+        start: LocalDate,
+        end: LocalDate,
+    ): List<RateObservation> {
+        return timeSeries.rates
+            .mapNotNull { (dateText, rates) ->
+                val rate = rates[code] ?: return@mapNotNull null
+                val date = LocalDate.parse(dateText)
+                if (date in start..end) RateObservation(date = date, rate = rate.toDecimal()) else null
+            }
+            .sortedByDescending(RateObservation::date)
     }
 
     // Going through the string keeps the decimal digits the API sent: 0.89158 stays 0.89158
